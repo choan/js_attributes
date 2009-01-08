@@ -4,11 +4,11 @@
 
 Features:
 
-  * Undeclared attributes are not allowed to be set
-  * Validation
-  * `onchange` callbacks
-  * Bypassing the `set` and `get` methods is not possible
-  * Inclusion on host objects
+* Undeclared attributes are not allowed to be set
+* Validation
+* `onchange` callbacks
+* Bypassing the `set` and `get` methods is not possible
+* Inclusion on host objects
 
 ## Usage
 
@@ -59,8 +59,8 @@ Use the `each` method to iterate. The callback is invoked with <var>value</var> 
 
 Use the `Attributes.on` to merge an `Attributes` instance on host objects. Methods are renamed in the following form:
 
-  * `add`, `set`, `get` and `each` are `addAttribute`, `setAttribute`, etc.
-  * `merge` is `mergeAttributes`
+* `add`, `set`, `get` and `each` are `addAttribute`, `setAttribute`, etc.
+* `merge` is `mergeAttributes`
 
 An example:
 
