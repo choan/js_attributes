@@ -1,0 +1,87 @@
+# Attributes
+
+**Attributes** is a one-object-library, created as an experiment to isolate JavaScript object attributes.
+
+Features:
+
+  * Undeclared attributes are not allowed to be set
+  * Validation
+  * `onchange` callbacks
+  * Bypassing the `set` and `get` methods is not possible
+  * Inclusion on host objects
+
+## Usage
+
+Create an `Attributes` instance:
+
+    var conf = new Attributes();
+
+Declare acceptable attributes with the chainable `add` method:
+
+    conf.add('name').add('surname');
+
+You can set validations and onchange callbacks on attributes (check `Attributes.validations` for allowed methods. Add more methods as needed):
+
+    conf.add('age', [ ['numeric'], ['min', 18] ]);
+
+The callback function is called with three arguments: the name of the attribute, the new value and the old value. Context of invocation is not modified. Value is not changed if the callback returns `false`.
+
+    conf.add('name', null, function(name, newValue, oldValue) {
+      console.log(name, 'changed from', oldValue, 'to', newValue);
+    });
+
+Setting and getting attributes:
+
+    // returns true if the attribute value
+    // is set, otherwise returns false
+    conf.set('name', 'Choan');
+    
+    // returns the value of the attribute
+    // or undefined if not set
+    conf.get('surname');
+
+You can merge objects-as-hashes on the collection of values:
+
+    conf.merge({
+      name: 'Choan',
+      surname : 'Galvez',
+      age: 32
+    });
+
+Use the `each` method to iterate. The callback is invoked with <var>value</var> and <var>key</var> as arguments. Context is not modified.
+
+    conf.each(function(v, k) {
+      console.log(k, 'is', v);
+    });
+
+
+## Including in other objects
+
+Use the `Attributes.on` to merge an `Attributes` instance on host objects. Methods are renamed in the following form:
+
+  * `add`, `set`, `get` and `each` are `addAttribute`, `setAttribute`, etc.
+  * `merge` is `mergeAttributes`
+
+An example:
+
+    var Client = function() {
+      Attributes.on(this);
+      this
+        .addAttribute('name')
+        .addAttribute('surname')
+        .addAttribute('age', [ ['numeric'], ['min', 18] ]);
+    };
+  
+    var client = new Client();
+    client.setAttribute('name', 'Choan');
+    client.setAttribute('surname', 'Gálvez');
+    client.setAttribute('age', 32);
+    client.eachAttribute(function(value, key) {
+      console.log(key, 'is', value);
+    });
+
+Check the source and the tests for more info.
+
+## License
+
+**Attributes** has been created by <a href="http://choangalvez.nom.es/" hreflang="es">Choan Galvez</a> and is freely distributable under the terms of a MIT-style license. The source code resides in a <a href="http://github.com/choan/js_attributes/">Git repository at github</a>.

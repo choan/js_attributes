@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>JavaScript unit test file</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <script src="../assets/jsunittest.js" type="text/javascript"></script>
+  <script src="../assets/jshoulda.js" type="text/javascript"></script>
+  
+  <script src="../../src/attributes.js" type="text/javascript"></script>
+  
+  <link rel="stylesheet" href="../assets/unittest.css" type="text/css" />
+</head>
+<body>
+
+<div id="content">
+
+  <div id="header">
+    <h1>JavaScript unit test file</h1>
+    <p>
+      This file tests <strong>attributes.js</strong>.
+    </p>
+  </div>
+
+  <!-- Log output (one per Runner, via {testLog: "testlog"} option)-->
+  <div id="testlog"></div>
+  
+  <!-- Put sample/test html here -->
+  <div id="sample"></div>
+</div>
+
+<script type="text/javascript">
+// <![CDATA[
+
+jShoulda
+  .setContextAlias('describe', '')
+  .setShouldAlias('it', '')
+  .unifyRunners();
+
+
+describe("An attributes object", {
+  setup: function() {
+    this.config = new Attributes();
+    this.config.add('something');
+  }
+  },
+  it("has a set method", function() {
+    this.assertEqual(true, this.config.set('something', 3));
+  }),
+  it("has a get method", function() {
+    this.config.set('something', 3);    
+    this.assertEqual(3, this.config.get('something'));
+  }),
+  it("returns undefined when an unknown attribute is read", function() {
+    this.assertIdentical(undefined, this.config.get('something'));
+  }),
+  it('does not accept undeclared attributes', function() {
+    var config = this.config;
+    this.assertRaise('InvalidAttribute', function() {
+      config.set('hoe', 'not allowed');    
+    });
+  }),
+  it("validates values on set", function() {
+    var config = this.config;
+    config.add('hoe', [ [ 'numeric' ] ]);
+    this.assertRaise('InvalidAttributeValue', function() {
+      config.set('hoe', 'not allowed');
+    });
+    this.assertNothingRaised(function() {
+      config.set('hoe', 3);
+    });
+  }),
+  it("fires callbacks when a watched attribute is modified", function() {
+    var config = this.config;
+    var done = false;
+    config.add('hoe', null, function(name, newValue, oldValue) {
+      done = true;
+    });
+    this.assertEqual(true, config.set('hoe', 'un dos tres'));
+    this.assertIdentical(true, done);
+  }),
+  it("does not fires callbacks when a watched attribute is set but not modified", function() {
+    var config = this.config;
+    var done = 0;
+    config.add('hoe', null, function(name, newValue, oldValue) {
+      done += 1;
+    });
+    this.assertEqual(true, config.set('hoe', 'un dos tres'));
+    this.assertEqual(true, config.set('hoe', 'un dos tres'));
+    this.assertEqual(1, done);
+  }),
+  it("cancels setting of values when the callback returns false", function() {
+    var config = this.config;
+    var done = false;
+    config.add('hoe', null, function(name, newValue, oldValue) {
+      if (newValue === 'un dos tres') return false;
+    });
+    this.assertIdentical(false, config.set('hoe', 'un dos tres'));
+    this.assertIdentical(true, config.set('hoe', 'hey'));
+  }),
+  it("can merge other objects", function() {
+    var config = this.config;
+    config.merge({something: 'different'});
+    this.assertEqual('different', config.get('something'));
+  }),
+  it("iterates through its properties", function() {
+    var config = this.config;
+    config.add('foo').merge({something: 'different', foo: 'bar'});
+    var out = '';
+    config.each(function(v, k) {
+      out += k + v;
+    });
+    this.assertEqual('somethingdifferentfoobar', out);
+  })
+)();
+
+
+var Client = function(name, surname) {
+  Attributes.on(this)
+    .addAttribute('name', null, function(name, newValue, oldValue) {
+      console.log(name, 'switched from', oldValue, 'to', newValue);
+    })
+    .addAttribute('surname')
+    .addAttribute('age', [ ['numeric'], ['min', 18]]);
+  this.setAttribute('name', name);
+  this.setAttribute('surname', surname);
+};
+
+describe("A client", {
+  setup: function() {
+    this.client = new Client('Jaime', 'González');
+  }
+  },
+  it("has a name", function() {
+    this.assertIdentical('Jaime', this.client.getAttribute('name'));
+    this.assertIdentical(true, this.client.setAttribute('name', 'Choan'));
+    this.assertIdentical('Choan', this.client.getAttribute('name'));
+  }),
+  it("can merge hashes", function() {
+    this.client.mergeAttributes({name: 'Julian', surname:'Benitez'});
+    this.assertIdentical('Julian', this.client.getAttribute('name'));
+    this.assertIdentical('Benitez', this.client.getAttribute('surname'));
+  }),
+  it("raises when a non numeric age is set", function() {
+    var client = this.client;
+    this.assertRaise('InvalidAttributeValue', function() {
+      client.setAttribute('age', 'dubidu');
+    });
+  }),
+  it("raises when an invalid age is set", function() {
+    var client = this.client;
+    this.assertRaise('InvalidAttributeValue', function() {
+      client.setAttribute('age', 17);
+    });    
+  })
+)();
+
+// ]]>
+</script>
+</body>
+</html>
